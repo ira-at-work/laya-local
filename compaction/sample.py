@@ -8,7 +8,8 @@ import random
 import sys
 from pathlib import Path
 
-from replay import ROOT, session_items
+sys.path.insert(0, str(Path(__file__).parent))  # -I drops the script dir
+from replay import ROOT, session_items  # noqa: E402
 
 MIN_CHARS = 300  # smaller results are not worth compacting
 random.seed(0)
