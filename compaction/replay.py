@@ -29,8 +29,8 @@ def text_of(content):
     return ""
 
 
-def session_items(path):
-    calls, events, assistant_turn, last_msg = {}, [], 0, None
+def session_items(path, with_text=False):
+    calls, events, assistant_turn, last_msg, task = {}, [], 0, None, ""
     out_tokens = collections.defaultdict(list)  # token -> assistant turn indices (sorted)
     seen = set()
     for line in open(path, errors="replace"):
@@ -65,14 +65,16 @@ def session_items(path):
                     txt = text_of(b.get("content"))
                     name, call = calls.get(b.get("tool_use_id"), ("?", ""))
                     new = set(TOK.findall(txt)) - set(TOK.findall(call)) - seen
-                    events.append((name, len(txt), assistant_turn, new))
+                    extra = {"result": txt, "call": call, "task": task} if with_text else {}
+                    events.append((name, len(txt), assistant_turn, new, extra))
                     seen |= set(TOK.findall(txt))
                 elif b.get("type") == "text":
-                    seen |= set(TOK.findall(b.get("text", "")))
-    for name, n, turn, new in events:
+                    task = b.get("text", "")  # most recent user text
+                    seen |= set(TOK.findall(task))
+    for name, n, turn, new, extra in events:
         first = min((out_tokens[t][i] for t in new if (i := bisect.bisect_right(out_tokens[t], turn)) < len(out_tokens[t])), default=None)
         yield {"tool": name, "chars": n, "turn": turn, "new_anchors": len(new),
-               "needed": first is not None, "needed10": first is not None and first - turn <= 10}
+               "needed": first is not None, "needed10": first is not None and first - turn <= 10, **extra}
 
 
 def main():
