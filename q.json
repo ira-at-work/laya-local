@@ -1,0 +1,5 @@
+{
+  "refund": {"type": "noul", "instructions": "Does the customer request a refund?"},
+  "dept": {"type": "choice", "instructions": "Which team should handle this?",
+           "criteria": ["billing", "technical support", "sales", "account management"]}
+}
