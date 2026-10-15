@@ -30,7 +30,7 @@ def text_of(content):
 
 
 def session_items(path):
-    calls, events, assistant_turn = {}, [], 0
+    calls, events, assistant_turn, last_msg = {}, [], 0, None
     out_tokens = collections.defaultdict(list)  # token -> assistant turn indices (sorted)
     seen = set()
     for line in open(path, errors="replace"):
@@ -44,7 +44,9 @@ def session_items(path):
         if not isinstance(content, list):
             continue
         if r["type"] == "assistant":
-            assistant_turn += 1
+            if r["message"].get("id") != last_msg:  # one API message spans several records
+                assistant_turn += 1
+                last_msg = r["message"].get("id")
             for b in content:
                 if b.get("type") == "tool_use":
                     s = json.dumps(b.get("input", {}))
