@@ -89,4 +89,8 @@ then register `gate/hook.py` as a `PreToolUse` hook on `Bash` in your Claude Cod
 
 ## Status
 
-Written up on 2026-10-15. No active development; no license file has been added yet.
+Written up on 2026-10-15. No active development.
+
+## License
+
+[CC0 1.0](LICENSE): public domain dedication. Laya itself is Apache-2.0 and is not covered by this repo's license.
