@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.example.laya-gate</string>
+
+    <!-- Replace the two absolute paths below (launchd does not expand ~ or $HOME) -->
+    <key>ProgramArguments</key>
+    <array>
+        <string>/ABSOLUTE/PATH/TO/uv</string>
+        <string>run</string>
+        <string>--frozen</string>
+        <string>--directory</string>
+        <string>/ABSOLUTE/PATH/TO/laya-local</string>
+        <string>python</string>
+        <string>-I</string>
+        <string>gate/daemon.py</string>
+        <string>mps</string>
+    </array>
+
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <true/>
+    <!-- A model reload takes ~15 s; avoid a tight crash loop -->
+    <key>ThrottleInterval</key>
+    <integer>30</integer>
+    <!-- Keep the resident model from competing with foreground work -->
+    <key>Nice</key>
+    <integer>10</integer>
+
+    <!-- The daemon creates ~/.laya-gate itself, but launchd opens these first: create it beforehand -->
+    <key>StandardOutPath</key>
+    <string>/ABSOLUTE/PATH/TO/HOME/.laya-gate/daemon.out.log</string>
+    <key>StandardErrorPath</key>
+    <string>/ABSOLUTE/PATH/TO/HOME/.laya-gate/daemon.err.log</string>
+</dict>
+</plist>

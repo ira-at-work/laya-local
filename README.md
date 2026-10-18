@@ -39,7 +39,7 @@ A resident daemon holds the model and a stdlib-only `PreToolUse` hook forwards e
 - Small, self-made evaluation sets; one seed; AUC standard error at n=400 is roughly 0.03.
 - Confidence is uncalibrated: the checkpoint ships invalid temperatures (clamped to 0.5).
 - The compaction labeler is automatic and crude; the hand check of it was n=20 and done by a model, not independently.
-- Single user's workload (infra, Terraform, spec-driven development).
+- One person's daily Claude Code usage; results may not transfer to other workloads.
 - Vendor and third-party claims in the notes are marked "reported" and were not reproduced, except question independence, which did not reproduce here.
 - The notes include a static-only review of eight third-party repos. Nothing was executed and no dependency CVE scan completed, so "not scanned" is not "clean".
 
@@ -73,7 +73,7 @@ python3 -I compaction/sample.py /tmp/replay/sample.jsonl 400
 uv run --frozen python -I compaction/score.py /tmp/replay/sample.jsonl /tmp/replay/scored.jsonl mps
 ```
 
-Gate daemon (writes `~/.laya-gate/decisions.jsonl`):
+Gate daemon (writes `~/.laya-gate/decisions.jsonl`; see [`gate/README.md`](gate/README.md) for the architecture, log format, launchd service template and evaluation procedure):
 
 ```
 uv run --frozen python -I gate/daemon.py mps
