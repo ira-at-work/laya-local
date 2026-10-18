@@ -9,22 +9,20 @@ Full narrative, measurements, vetting tables and conclusions: `docs/session-2026
 | `laya-local` repo | clean, master, last commit `3df8e7bab3`. `laya==0.4.8`, `uv.lock` committed |
 | Pinned model revision | `7b928d828b7b0e022f929d9bd2e44165aa270148` (`typed-decisions`) |
 | Gate hook | registered in `settings.json` (PreToolUse, Bash, timeout 5). Observe-only, fail-open, ~20 ms per command |
-| Gate daemon | running **as a background task of the Claude session that started it** (pid seen 69510). Unverified, but it will probably die when that session ends; the hook then silently does nothing (fail-open), so **logging stops without any error** |
+| Gate daemon | launchd user agent `com.ira.laya-gate` (`~/Library/LaunchAgents/com.ira.laya-gate.plist`): RunAtLoad, KeepAlive, Nice 10, logs `~/.laya-gate/daemon.{out,err}.log`. Installed 2026-10-18; survives sessions and logins. Restart-after-kill not tested |
 | Gate log | `~/.laya-gate/decisions.jsonl` (mode 0600, plaintext commands), 33 records at hand-off |
 | Compaction replay | finished, negative result, nothing installed in Claude Code |
 | TypeSafe plugin | installed (`typesafe@typesafe-ai` 0.5.7), vetted; `~/.claude/skills/laya-local` overlay holds the Laya-specific API notes |
 | Dotfiles | `~/.homesick/repos/dotclaude/home/.claude/settings.json` has the hook edit **uncommitted**, together with unrelated pre-existing churn |
 
-## To resume the gate experiment
+## To operate the gate experiment
 
-1. Start the daemon in its own terminal so it outlives Claude sessions:
-   `cd /Users/ira/src/laya-local && nice uv run --frozen python -I gate/daemon.py mps`
-   (it refuses to start if one is already listening; a stale socket is cleaned up automatically).
+1. The daemon is managed by launchd. Status: `launchctl print gui/$(id -u)/com.ira.laya-gate`. Restart: `launchctl kickstart -k gui/$(id -u)/com.ira.laya-gate`. Stop: `launchctl bootout gui/$(id -u)/com.ira.laya-gate`.
 2. Check it is logging: `wc -l ~/.laya-gate/decisions.jsonl` should grow after Bash commands in any Claude session.
 3. Let it accumulate (target at least 200 commands). The log holds full command text, so review it before sharing anywhere and consider rotating it.
 4. Label the log by hand (risky or benign per question), then follow `docs/session-2026-10-15.md` section 11, item 1: per-question AUC, false-positive rate, `laya.calibrate` fit, and comparison against a regex version of the existing deny list. If the regex matches Laya, drop the model.
 
-To turn the gate off: remove the `laya-local/gate/hook.py` entry from `PreToolUse` in `settings.json` (edit the target under `~/.homesick/repos/dotclaude`, since `~/.claude/settings.json` is a symlink), or just stop the daemon.
+To turn the gate off: remove the `laya-local/gate/hook.py` entry from `PreToolUse` in `settings.json` (edit the target under `~/.homesick/repos/dotclaude`, since `~/.claude/settings.json` is a symlink), or `launchctl bootout` the agent (killing the process alone is not enough: KeepAlive restarts it).
 
 ## To rerun the compaction replay
 
